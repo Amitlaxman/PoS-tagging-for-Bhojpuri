@@ -36,20 +36,20 @@ def tokenize_and_align_labels(sentences: List[List[str]],
     
     aligned_labels = []
     
-    for i, label in enumerate(labels):
-        word_ids = tokenized_inputs.word_ids(batch_index=i)  # Maps tokens back to original words index
+    for i, labels_list in enumerate(labels):
+        word_ids = tokenized_inputs.word_ids(batch_index=i)
         previous_word_idx = None
         label_ids = []
         
         for word_idx in word_ids:
-            # Special tokens are None, mapping to -100 (ignored during loss calculation)
             if word_idx is None:
+                # Special tokens ([CLS], [SEP], [PAD])
                 label_ids.append(-100)
-            # Assign label only to the FIRST subword of a split word
             elif word_idx != previous_word_idx:
-                label_ids.append(label2id[label[word_idx]])
-            # Subsequent subwords also mapped to -100
+                # First subword of a word - assign the label
+                label_ids.append(label2id[labels_list[word_idx]])
             else:
+                # Subsequent subwords - assign -100
                 label_ids.append(-100)
             
             previous_word_idx = word_idx
