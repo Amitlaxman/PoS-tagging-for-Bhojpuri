@@ -1,0 +1,14 @@
+torch
+transformers
+datasets
+seqeval
+scikit-learn
+pandas
+numpy
+indic-nlp-library
+tqdm
+matplotlib
+seaborn
+ipywidgets
+nbformat
+ipykernel
