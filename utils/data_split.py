@@ -1,7 +1,7 @@
 import random
 from typing import List, Tuple
 
-def split_dataset(
+def train_test_split_data(
     sentences: List[List[str]], 
     labels: List[List[str]], 
     split_ratio: float = 0.8,
