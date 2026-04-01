@@ -47,7 +47,7 @@ def get_training_args():
         num_train_epochs=3,
         weight_decay=0.01,
         logging_steps=50,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
         report_to="none"
