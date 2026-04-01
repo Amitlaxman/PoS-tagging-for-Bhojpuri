@@ -3,7 +3,7 @@ import os
 import torch
 import numpy as np
 from transformers import AutoModelForTokenClassification, TrainingArguments, Trainer, AutoTokenizer
-from seqeval.metrics import f1_score, precision_score, recall_score, accuracy_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 # Ensure root directory is in path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -53,26 +53,38 @@ def get_training_args():
         report_to="none"
     )
 
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+
 def get_compute_metrics(id2label):
     """Returns a compute_metrics function for the Trainer."""
     def compute_metrics(p):
         predictions, labels = p
         predictions = np.argmax(predictions, axis=2)
 
+        # Flatten predictions and labels while removing -100 (ignored tokens)
         true_predictions = [
-            [id2label[p] for (p, l) in zip(prediction, label) if l != -100]
-            for prediction, label in zip(predictions, labels)
+            p for prediction, label in zip(predictions, labels)
+            for (p, l) in zip(prediction, label) if l != -100
         ]
         true_labels = [
-            [id2label[l] for (l) in label if l != -100]
-            for label in labels
+            l for label in labels
+            for l in label if l != -100
         ]
 
+        # Calculate metrics using sklearn (more robust for flat POS tags)
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            true_labels, 
+            true_predictions, 
+            average='weighted', 
+            zero_division=0
+        )
+        acc = accuracy_score(true_labels, true_predictions)
+
         return {
-            "precision": precision_score(true_labels, true_predictions),
-            "recall": recall_score(true_labels, true_predictions),
-            "f1": f1_score(true_labels, true_predictions),
-            "accuracy": accuracy_score(true_labels, true_predictions),
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "accuracy": acc,
         }
     return compute_metrics
 
