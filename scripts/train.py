@@ -25,6 +25,13 @@ class POSDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.encodings.input_ids)
 
+def load_datasets():
+    """Loads and returns training and development datasets from the UD data path."""
+    train_sentences, train_labels = load_conllu(os.path.join(config.DATA_PATH, "hi_hdtb-ud-train.conllu"))
+    dev_sentences, dev_labels = load_conllu(os.path.join(config.DATA_PATH, "hi_hdtb-ud-dev.conllu"))
+    
+    return train_sentences, train_labels, dev_sentences, dev_labels
+
 def load_pos_model(model_checkpoint: str, label2id: dict, id2label: dict):
     """Loads a pretrained transformer model for token classification."""
     num_labels = len(label2id)
@@ -40,16 +47,19 @@ def load_pos_model(model_checkpoint: str, label2id: dict, id2label: dict):
 
 def get_training_args():
     """Configures the training parameters for fine-tuning."""
+    
     return TrainingArguments(
         output_dir=os.path.join(config.MODEL_PATH, "checkpoints"),
-        learning_rate=5e-5,
-        per_device_train_batch_size=16,
-        num_train_epochs=3,
+        learning_rate=3e-5,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        num_train_epochs=4,
         weight_decay=0.01,
         logging_steps=50,
-        eval_strategy="epoch",
+        eval_strategy="epoch",  # Kept as 'eval_strategy' to avoid your previously caught TypeError
         save_strategy="epoch",
         load_best_model_at_end=True,
+        save_total_limit=2,
         report_to="none"
     )
 
